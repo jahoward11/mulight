@@ -79,7 +79,7 @@ let chid = dcnode.querySelector('header') ? "header" : "top",
   hxct_hhx = [0, 0, 0, 0, 0, 0, 0],
   hxi, hxilvl, hxilvlprv, hxlen, hxrlvl, hxsdiff, hxsl, hxtoplvl, i,
   mnotect = 0,
-  navchlen = window.document.querySelectorAll('.navch').length,
+  navchlen = dcnode.querySelectorAll('.navch').length,
   navct = 0,
   pari_navct = null,
   parlen,
@@ -177,7 +177,7 @@ hnpatt = !hnpatt2 ? null : () => hnpatt1() + ( (tf05[1] < 2) ? "" // hdgnbr addi
 divinnr = () => ( acs.hnwrap[0] < 0 ? "" : hnwpre0 + "<a href=#" + chid + "><strong>" //+ "&#8203;"
   + (hxrlvl && hnpatt ? hnpatt() : "").replace(/(\\W*\\w+)(.*?)(\\d*)$|^$/, hnwrap0) + "</strong></a>" )
   + (acs.pnwrap < 0 ? "" : (i - pari_navct).toString().replace(/.*/, window.eval(pnwrap)));
-pars = (hxrlvl < 0 || hxrlvl > 6) ? [] : window.document.querySelectorAll('p');
+pars = (hxrlvl < 0 || hxrlvl > 6) ? [] : dcnode.querySelectorAll('p');
 for (i = 0, parlen = pars.length; i < parlen; i++) { //for (let [i, pari] of pars.entries()) {
   if (/\bcolophon/i.test(pars[i].parentNode.id)
   || /\bfootnote/i.test(pars[i].parentNode.className)) { break; }
@@ -219,7 +219,7 @@ for (i = 0, parlen = pars.length; i < parlen; i++) { //for (let [i, pari] of par
     pcontainer.parentNode.insertBefore(divnew, pcontainer);
   }
 }
-tochxs = ((tf05[2] && tf05[3]) || (tf05[0] && tf05[1])) && window.document.querySelectorAll(hdgtags.slice(
+tochxs = ((tf05[2] && tf05[3]) || (tf05[0] && tf05[1])) && dcnode.querySelectorAll(hdgtags.slice(
   ...(tf05[2] && tf05[3] ? [tf05[2] - 1, tf05[2] + tf05[3] - 1] : [tf05[0] - 1, tf05[0] + tf05[1] - 1])
   ).join());
 hxct = [0, 0, 0, 0, 0, 0, 0];
@@ -326,6 +326,7 @@ function annosHilit(docmod) {
 }
 
 
+if (texthl && acs.texthl) { return; }
 if (window.editorApp) { window.alert("editorApp detected.\nApplying ebook-annos-fns to render."); }
 if (!Array.isArray(acs.texthl) && acs.texthl.length) { texthl = acs.texthl
 } else { texthl = (dcnode.innerHTML.match(sepatthl) || ["", ""])[1]; }
@@ -341,11 +342,13 @@ dcnode.normalize();
 hljsSetup();
 htmlperiphs = dcnode.innerHTML.match(sepattperiphs) || []; // preserve periph
 dcnode.innerHTML = dcnode.innerHTML.replace(sepattperiphs, "<!--phold-periph-->"); // placehold periph
-refNbrAssign();
+if (!dcnode.querySelector('.refnbr')) {
+  refNbrAssign();
+  annosXlink();
+}
 //if (typeof acs.tocfmt !== 'number' || acs.tocfmt >= 0) { refNbrAssign(); }
-annosXlink();
 dcnode.innerHTML = annosHilit(dcnode.innerHTML);
-if (!window.document.querySelector('#TOC') && tocbuild) { // insert toc
+if (!dcnode.querySelector('#TOC') && tocbuild) { // insert toc
   dcnode.innerHTML = dcnode.innerHTML
     .replace( /^\n*(<hr\b.*?>\n+|<figure\b.*?>.*?<\/figure>\n+)(?=(?:<(?!hr\b|figure\b).*\n|\n)*<(?:div|p)\b.*? class=['"]?navch\b.*?>|<h([123])\b.*?>.*?<\/h\2>)|^(?=<(?:div|p)\b.*? class=['"]?navch\b.*?>)/im,
       "\n" + tocbuild + "\n$1<div style=\"display: none;\">\\newpage </div>\n\n" );
