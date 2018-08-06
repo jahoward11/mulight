@@ -18,6 +18,7 @@ let a = window.annos && window.annos.configs && window.annos || { configs: {} },
   dstyle = dcnode.querySelectorAll('style') || [],
   htmlperiphs, pei = 0,
   sepatthl = /<!-- *(?:annotations-hili|annoshl|texthl).*\n*([^]*?)\n*-->/i,
+  sepatthlblk = /((?:\n|^)(?:{[ *+=_~]*\\?[#.]?\w*}|)\n|^)(?!{[ *+=_~]*\\?[#.]?\w*})([^]+?)(?=(?:{[ *+=_~]*\\?[#.]?\w*}|)(?:\n\n|$)|\n{[ *+=_~]*\\?[#.]?\w*}(?:\n|$))/g,
   sepattperiphs = /<!--[^]*?-->|<(script|style)\b.*?>[^]*?<\/\1>/gi,
   stylenew, texthl,
   tocbuild = ""; //refNbrAssign, annos.fns
@@ -65,7 +66,7 @@ let hnbgn = acs.ptchbgn[acs.ptchbgn[0]],
   ptchbgn = acs.ptchbgn,
   tocfmt = typeof acs.tocfmt !== 'number' ?  acs.tocfmt
     : (Number.isInteger(acs.tocfmt) && acs.tocfmt > 0 ? acs.tocfmt.toString() : "");
-let chid = "header",
+let chid = dcnode.querySelector('header') ? "header" : "top",
   divnew, divinnr, h16mask, h16nav,
   hdgtags = [':not(td):not(th)>h1:not(.title)', ':not(td):not(th)>h2:not(.title):not(.author)', ':not(td):not(th)>h3:not(.date)', ':not(td):not(th)>h4', ':not(td):not(th)>h5', ':not(td):not(th)>h6'],
   //hdgtags = ['h1:not(.title)', 'h2:not(.title):not(.author)', 'h3:not(.date)', 'h4', 'h5', 'h6'],
@@ -90,6 +91,10 @@ let chid = "header",
 if (!navchlen) { htable.forEach(ht => ht.className = "htable"); }
 if (!navchlen && htitle && !/\btitle\b/i.test(htitle.className)) { htitle.className = "title"; }
 hxlen = [0].concat(hdgtags.map(e => dcnode.querySelectorAll(e).length));
+if (!hxlen.some(e => e)) {
+  let p0 = dcnode.querySelector('p');
+  p0.parentNode.insertBefore(window.document.createElement('h3'), p0);
+}
 hxtoplvl = hxlen.findIndex(l => l);
 tf0auto = hxtoplvl < 0 ? 0 : [1, 2, 3, 4, 5, 6].find(n => hxtoplvl <= n && hxlen[n] > 1) || 0;
 tf1auto = !tf0auto ? 0 : hxlen[3] && tf0auto <= 2 ? 4 - tf0auto : hxlen[2] && tf0auto <= 1 ? 2 : 1;
@@ -177,6 +182,7 @@ for (i = 0, parlen = pars.length; i < parlen; i++) { //for (let [i, pari] of par
   if (/\bcolophon/i.test(pars[i].parentNode.id)
   || /\bfootnote/i.test(pars[i].parentNode.className)) { break; }
   //if (pars[i].parentNode.id === "colophon") { break; }
+  pars[i].innerHTML = pars[i].innerHTML.replace(/[ \n]+/g, " ") + "\n";
   if ( (hnpatt || hntoc || !hxrlvl) && pars[i].className === "navch" //|| !navchlen
   && /^h\d/i.test(pnextnode = pars[i].nextElementSibling ? pars[i].nextElementSibling.nodeName : "") ) {
     navct++;
@@ -290,7 +296,7 @@ function annosXlink() {
 function annosHilit(docmod) {
   let acolor, aptys, atag,
     colordflts = {mark: ".ye6", strong: "", em: "", s: "", ins: "", span: ""},
-    isregx, reterm, sepatt, tagdflt = "mark";
+    isregx, refnc, sepatt, tagdflt = "mark";
   acs.texthl.forEach(txt => {
     aptys = /{ *([*+=_~]*) *([#.]?\w*|\\#[0-9a-f]{3,6})}$/.exec(txt) || ["", "", ""];
     aptys[3] = typeof txt !== 'string' ? "" : txt.replace(/ *{[ *+=_~]*\\?[#.]?\w*}$/, "");
@@ -307,10 +313,12 @@ function annosHilit(docmod) {
       : acolor ? " style=\"background: " + acolor.replace(/^\\/, "") + ";\"" : "";
     sepatt = atag === "ins" && aptys[3]
       ? window.eval(sepatt.toString().replace(/(?=(?:\(\?=.*?\)|)\/[gim]*$)/i, "<\\/\\w+>"))
-      : isregx ? txt : aptys[3] ? new RegExp("\\b" + aptys[3] + "\\b", "gi") : /^$/;
-    reterm = atag !== "ins" ? "<" + atag + acolor + ">$&</" + atag + ">"
-      : (aptys[3] ? "$& <ins" + acolor + ">" + aptys[3] + "</ins>" : "$&");
-    docmod = docmod.replace(sepatt, reterm);
+      : isregx ? txt : aptys[3] ? new RegExp(aptys[3], "") : /^$/; //("\\b" + aptys[3] + "\\b", "gi")
+    refnc = atag === "ins" ? (aptys[3] ? "$& <ins" + acolor + ">" + aptys[3] + "</ins>" : "$&")
+      : function (...args) { return "<" + atag + acolor + ">" + ( args.slice(1, args.length - 2)
+        .map((e, i) => e + (i%2 ? "<" + atag + acolor + ">" : "</" + atag + ">")).join("") || args[0] )
+      + "</" + atag + ">"; }; //"<" + atag + acolor + ">$&</" + atag + ">"
+    docmod = docmod.replace(sepatt, refnc);
     if (/^{[ *+=_~]*\\?[#.]?\w*}$/.test(txt)) { colordflts[atag] = aptys[2]; if (atag !== "ins") tagdflt = atag; }
   });
   return docmod
@@ -319,8 +327,15 @@ function annosHilit(docmod) {
 
 
 if (window.editorApp) { window.alert("editorApp detected.\nApplying ebook-annos-fns to render."); }
-texthl = (dcnode.innerHTML.match(sepatthl) || ["", ""])[1].replace(/\/\/.*/gi, "").replace(/\n\n+/g, "\n");
-if (!acs.texthl.length) { acs.texthl = texthl.split("\n").map(e => /^\/.+\/[gim]*$/i.test(e) ? window.eval(e) : e); }
+if (!Array.isArray(acs.texthl) && acs.texthl.length) { texthl = acs.texthl
+} else { texthl = (dcnode.innerHTML.match(sepatthl) || ["", ""])[1]; }
+texthl = texthl.replace(/(?: |^)\/\/.*/gm, "").replace( sepatthlblk, (m, f1, f2) =>
+  /^\/.+\/[gim]*$|{[ *+=_~]*\\?[#.]?\w*}\n./im.test(f2) ? m //(/(?:[^\\]|^)(?:\\\\)*\\(?!\\)/g, "$&\\")
+  : f1 + "(" + f2.replace(/(?=[$()*+.?[\\^{|])/g, "\\").replace(/["'“”‘’]/g, "[\"'“”‘’]")
+    .replace(/ *(?:---?|—) */g, "[ -—]+").replace(/\n/g, ")(.*?)(") + ")" ).replace(/\n\n+/g, "\n");
+if (!Array.isArray(acs.texthl) || !acs.texthl.length) {
+  acs.texthl = texthl.split("\n").map(e => /^\/.+\/[gim]*$/i.test(e) ? window.eval(e) : e);
+}
 //dcnode.innerHTML = dcnode.innerHTML.replace(/<!-- *(?:\/\/ *)?(?:anno|text)[^]*?-->\n?/gi, "");
 dcnode.normalize();
 hljsSetup();
