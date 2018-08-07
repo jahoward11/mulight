@@ -66,7 +66,7 @@ let hnbgn = acs.ptchbgn[acs.ptchbgn[0]],
   ptchbgn = acs.ptchbgn,
   tocfmt = typeof acs.tocfmt !== 'number' ?  acs.tocfmt
     : (Number.isInteger(acs.tocfmt) && acs.tocfmt > 0 ? acs.tocfmt.toString() : "");
-let chid = dcnode.querySelector('header') ? "header" : "top",
+let chid = dcnode.querySelector('#header') ? "header" : "top",
   divnew, divinnr, h16mask, h16nav,
   hdgtags = [':not(td):not(th)>h1:not(.title)', ':not(td):not(th)>h2:not(.title):not(.author)', ':not(td):not(th)>h3:not(.date)', ':not(td):not(th)>h4', ':not(td):not(th)>h5', ':not(td):not(th)>h6'],
   //hdgtags = ['h1:not(.title)', 'h2:not(.title):not(.author)', 'h3:not(.date)', 'h4', 'h5', 'h6'],
@@ -321,13 +321,12 @@ function annosHilit(docmod) {
     docmod = docmod.replace(sepatt, refnc);
     if (/^{[ *+=_~]*\\?[#.]?\w*}$/.test(txt)) { colordflts[atag] = aptys[2]; if (atag !== "ins") tagdflt = atag; }
   });
+  window.annos.configs.texthl = [];
   return docmod
   .replace(/(<(?=!--|<[eims]|\/?[a-z])[^\n<>]*)<(em|ins|mark|s|span|strong)\b[^\n<>]*>(.*?)<\/\2>(?=[^\n<>]*>)/g, "$1$3");
 }
 
 
-if (texthl && acs.texthl) { return; }
-if (window.editorApp) { window.alert("editorApp detected.\nApplying ebook-annos-fns to render."); }
 if (!Array.isArray(acs.texthl) && acs.texthl.length) { texthl = acs.texthl
 } else { texthl = (dcnode.innerHTML.match(sepatthl) || ["", ""])[1]; }
 texthl = texthl.replace(/(?: |^)\/\/.*/gm, "").replace( sepatthlblk, (m, f1, f2) =>
@@ -337,16 +336,17 @@ texthl = texthl.replace(/(?: |^)\/\/.*/gm, "").replace( sepatthlblk, (m, f1, f2)
 if (!Array.isArray(acs.texthl) || !acs.texthl.length) {
   acs.texthl = texthl.split("\n").map(e => /^\/.+\/[gim]*$/i.test(e) ? window.eval(e) : e);
 }
-//dcnode.innerHTML = dcnode.innerHTML.replace(/<!-- *(?:\/\/ *)?(?:anno|text)[^]*?-->\n?/gi, "");
+dcnode.innerHTML = dcnode.innerHTML.replace(/<!-- *(?:\/\/ *)?(?:anno|text)[^]*?-->\n?/gi, "");
 dcnode.normalize();
 hljsSetup();
 htmlperiphs = dcnode.innerHTML.match(sepattperiphs) || []; // preserve periph
 dcnode.innerHTML = dcnode.innerHTML.replace(sepattperiphs, "<!--phold-periph-->"); // placehold periph
+//if (typeof acs.tocfmt !== 'number' || acs.tocfmt >= 0) { refNbrAssign(); }
 if (!dcnode.querySelector('.refnbr')) {
+  if (window.editorApp) { window.alert("editorApp detected.\nApplying ebook-annos-fns to render."); }
   refNbrAssign();
   annosXlink();
 }
-//if (typeof acs.tocfmt !== 'number' || acs.tocfmt >= 0) { refNbrAssign(); }
 dcnode.innerHTML = annosHilit(dcnode.innerHTML);
 if (!dcnode.querySelector('#TOC') && tocbuild) { // insert toc
   dcnode.innerHTML = dcnode.innerHTML
@@ -363,7 +363,7 @@ if (!Array.from(dstyle).some(s => /\.refnbr\b/i.test(s.innerHTML))) {
 };
 
 let rstate = window.document.readyState;
-window.console.log("marker4: " + rstate);
+//window.console.log("marker4: " + rstate);
 if (!window.onload && (rstate === 'loading' || rstate === 'uninitialized')) {
   window.onload = window.annos.fns;
 } else if (!window.onload && (!window.editorApp || Object.keys(window.annos.configs).length)) {
