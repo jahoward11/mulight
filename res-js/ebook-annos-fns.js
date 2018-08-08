@@ -7,7 +7,7 @@
 window.annos = window.annos || { configs: {} };
 //if (window.annos.fns) return;
 
-window.annos.fns = window.annos.fns || function x (cfgs) {
+window.annos.fns = window.annos.fns || function x(cfgs) {
 'use strict';
 
 let a = window.annos && window.annos.configs && window.annos || { configs: {} },
@@ -321,13 +321,13 @@ function annosHilit(docmod) {
     docmod = docmod.replace(sepatt, refnc);
     if (/^{[ *+=_~]*\\?[#.]?\w*}$/.test(txt)) { colordflts[atag] = aptys[2]; if (atag !== "ins") tagdflt = atag; }
   });
-  window.annos.configs.texthl = [];
+  window.annos && window.annos.configs && (window.annos.configs.texthl = []);
   return docmod
   .replace(/(<(?=!--|<[eims]|\/?[a-z])[^\n<>]*)<(em|ins|mark|s|span|strong)\b[^\n<>]*>(.*?)<\/\2>(?=[^\n<>]*>)/g, "$1$3");
 }
 
 
-if (!Array.isArray(acs.texthl) && acs.texthl.length) { texthl = acs.texthl
+if (!Array.isArray(acs.texthl) && acs.texthl.length) { texthl = acs.texthl;
 } else { texthl = (dcnode.innerHTML.match(sepatthl) || ["", ""])[1]; }
 texthl = texthl.replace(/(?: |^)\/\/.*/gm, "").replace( sepatthlblk, (m, f1, f2) =>
   /^\/.+\/[gim]*$|{[ *+=_~]*\\?[#.]?\w*}\n./im.test(f2) ? m //(/(?:[^\\]|^)(?:\\\\)*\\(?!\\)/g, "$&\\")
@@ -364,7 +364,8 @@ if (!Array.from(dstyle).some(s => /\.refnbr\b/i.test(s.innerHTML))) {
 
 let rstate = window.document.readyState;
 //window.console.log("marker4: " + rstate);
-if (!window.onload && (rstate === 'loading' || rstate === 'uninitialized')) {
+if ( (!window.onload || window.onload !== window.annos.fns)
+&& (rstate === 'loading' || rstate === 'uninitialized') ) {
   window.onload = window.annos.fns;
 } else if (!window.onload && (!window.editorApp || Object.keys(window.annos.configs).length)) {
   window.annos.fns(); } //if (rstate === 'complete' || rstate === 'interactive' || rstate === 'loaded')
