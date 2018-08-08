@@ -182,7 +182,9 @@ for (i = 0, parlen = pars.length; i < parlen; i++) { //for (let [i, pari] of par
   if (/\bcolophon/i.test(pars[i].parentNode.id)
   || /\bfootnote/i.test(pars[i].parentNode.className)) { break; }
   //if (pars[i].parentNode.id === "colophon") { break; }
-  pars[i].innerHTML = pars[i].innerHTML.replace(/[ \n]+/g, " ") + "\n";
+  if (pars[i].parentNode.nodeName !== 'PRE') {
+    pars[i].textContent = pars[i].textContent.replace(/[ \n]+/g, " ") + "\n";
+  }
   if ( (hnpatt || hntoc || !hxrlvl) && pars[i].className === "navch" //|| !navchlen
   && /^h\d/i.test(pnextnode = pars[i].nextElementSibling ? pars[i].nextElementSibling.nodeName : "") ) {
     navct++;
@@ -331,8 +333,9 @@ if (!Array.isArray(acs.texthl) && acs.texthl.length) { texthl = acs.texthl;
 } else { texthl = (dcnode.innerHTML.match(sepatthl) || ["", ""])[1]; }
 texthl = texthl.replace(/(?: |^)\/\/.*/gm, "").replace( sepatthlblk, (m, f1, f2) =>
   /^\/.+\/[gim]*$|{[ *+=_~]*\\?[#.]?\w*}\n./im.test(f2) ? m //(/(?:[^\\]|^)(?:\\\\)*\\(?!\\)/g, "$&\\")
-  : f1 + "(" + f2.replace(/(?=[$()*+.?[\\^{|])/g, "\\").replace(/["'“”‘’]/g, "[\"'“”‘’]")
-    .replace(/ *(?:---?|—) */g, "[ -—]+").replace(/\n/g, ")(.*?)(") + ")" ).replace(/\n\n+/g, "\n");
+  : f1 + "(" + f2.replace(/(?=[$()*+.?[\\^{|])/g, "\\").replace(/["'‘’“”]/g, "[\"'‘’“”]")
+    .replace(/[ \u2008-\u200b]*(?:---?|\u2014)[ \u2008-\u200b]*/g, "[ \\u2008-\\u200b\\u2014-]+")
+    .replace(/\n/g, ")(.*?)(") + ")" ).replace(/\n\n+/g, "\n");
 if (!Array.isArray(acs.texthl) || !acs.texthl.length) {
   acs.texthl = texthl.split("\n").map(e => /^\/.+\/[gim]*$/i.test(e) ? window.eval(e) : e);
 }
