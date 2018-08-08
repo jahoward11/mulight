@@ -183,7 +183,7 @@ for (i = 0, parlen = pars.length; i < parlen; i++) { //for (let [i, pari] of par
   || /\bfootnote/i.test(pars[i].parentNode.className)) { break; }
   //if (pars[i].parentNode.id === "colophon") { break; }
   if (pars[i].parentNode.nodeName !== 'PRE') {
-    pars[i].textContent = pars[i].textContent.replace(/[ \n]+/g, " ") + "\n";
+    pars[i].innerHTML = pars[i].innerHTML.replace(/[ \n]+/g, " ") + "\n";
   }
   if ( (hnpatt || hntoc || !hxrlvl) && pars[i].className === "navch" //|| !navchlen
   && /^h\d/i.test(pnextnode = pars[i].nextElementSibling ? pars[i].nextElementSibling.nodeName : "") ) {
