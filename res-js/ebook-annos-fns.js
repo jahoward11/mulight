@@ -18,7 +18,7 @@ let a = window.annos && window.annos.configs && window.annos || { configs: {} },
   dstyle = dcnode.querySelectorAll('style') || [],
   htmlperiphs, pei = 0,
   sepatthl = /<!-- *(?:annotations-hili|annoshl|texthl).*\n*([^]*?)\n*-->/i,
-  sepatthlblk = /((?:\n|^)(?:{[ *+=_~]*\\?[#.]?\w*}|)\n|^)(?!{[ *+=_~]*\\?[#.]?\w*})([^]+?)(?=(?:{[ *+=_~]*\\?[#.]?\w*}|)(?:\n\n|$)|\n{[ *+=_~]*\\?[#.]?\w*}(?:\n|$))/g,
+  sepatthlmf = /((?:\n|^)(?:{[ *+=_~]*\\?[#.]?\w*}|)\n|^)(?!{[ *+=_~]*\\?[#.]?\w*})([^]+?)(?=(?:{[ *+=_~]*\\?[#.]?\w*}|)(?:\n\n|$)|\n{[ *+=_~]*\\?[#.]?\w*}(?:\n|$))/g,
   sepattperiphs = /<!--[^]*?-->|<(script|style)\b.*?>[^]*?<\/\1>/gi,
   stylenew, texthl,
   tocbuild = ""; //refNbrAssign, annos.fns
@@ -47,14 +47,16 @@ function hljsSetup() {
     pcode, prenew;
   codeblocks.forEach(cbi => {
     pcode = cbi.parentNode;
-    if (pcode.parentNode.nodeName !== 'PRE' && pcode.childNodes.length === 1
-      && (pcode.nodeName === 'P' || pcode.nodeName === 'PRE')) {
-      if (window.hljs) { window.hljs.highlightBlock(cbi); }
-      // NOCS generates P>CODE. Markdownit generates PRE>CODE.
-      // Transform either one to PRE>P>CODE.
-      prenew = window.document.createElement('pre');
-      prenew.innerHTML = "<p>" + pcode.innerHTML + "</p>";
-      pcode.parentNode.replaceChild(prenew, pcode);
+    if (pcode.parentNode.nodeName !== 'PRE' && pcode.childNodes.length === 1) {
+      if (pcode.nodeName === 'P' || cbi.className === "language-p") {
+        // NOCS generates P>CODE. Markdownit generates PRE>CODE.
+        // Transform either one to PRE>P>CODE.
+        prenew = window.document.createElement('pre');
+        prenew.innerHTML = "<p>" + pcode.innerHTML + "</p>";
+        pcode.parentNode.replaceChild(prenew, pcode);
+      } else if (pcode.nodeName === 'PRE' && window.hljs) {
+        window.hljs.highlightBlock(cbi);
+      }
     }
   }); //hljs.initHighlighting();
 }
@@ -331,7 +333,7 @@ function annosHilit(docmod) {
 
 if (!Array.isArray(acs.texthl) && acs.texthl.length) { texthl = acs.texthl;
 } else { texthl = (dcnode.innerHTML.match(sepatthl) || ["", ""])[1]; }
-texthl = texthl.replace(/(?: |^)\/\/.*/gm, "").replace( sepatthlblk, (m, f1, f2) =>
+texthl = texthl.replace(/(?: |^)\/\/.*/gm, "").replace( sepatthlmf, (m, f1, f2) =>
   /^\/.+\/[gim]*$|{[ *+=_~]*\\?[#.]?\w*}\n./im.test(f2) ? m //(/(?:[^\\]|^)(?:\\\\)*\\(?!\\)/g, "$&\\")
   : f1 + "(" + f2.replace(/(?=[$()*+.?[\\^{|])/g, "\\").replace(/["'‘’“”]/g, "[\"'‘’“”]")
     .replace(/[ \u2008-\u200b]*(?:---?|\u2014)[ \u2008-\u200b]*/g, "[ \\u2008-\\u200b\\u2014-]+")
