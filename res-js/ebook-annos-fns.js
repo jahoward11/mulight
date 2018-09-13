@@ -70,12 +70,13 @@ let hnbgn = acs.ptchbgn[acs.ptchbgn[0]],
     : (Number.isInteger(acs.tocfmt) && acs.tocfmt > 0 ? acs.tocfmt.toString() : "");
 let chid = dcnode.querySelector('#header') ? "header" : "top",
   divnew, divinnr, h16mask, h16nav,
-  hdgtags = [':not(td):not(th)>h1:not(.title)', ':not(td):not(th)>h2:not(.title):not(.author)', ':not(td):not(th)>h3:not(.date)', ':not(td):not(th)>h4', ':not(td):not(th)>h5', ':not(td):not(th)>h6'],
+  hdgtags = ['>h1:not(.title)', '>h2:not(.title):not(.author)', '>h3:not(.date)', '>h4', '>h5', '>h6'].map(e => dcontainer + e),
+  //hdgtags = [':not(td):not(th)>h1:not(.title)', ':not(td):not(th)>h2:not(.title):not(.author)', ':not(td):not(th)>h3:not(.date)', ':not(td):not(th)>h4', ':not(td):not(th)>h5', ':not(td):not(th)>h6'],
   //hdgtags = ['h1:not(.title)', 'h2:not(.title):not(.author)', 'h3:not(.date)', 'h4', 'h5', 'h6'],
   hnpatt, hnpatt1, hnpatt2, hnseps,
   hntoc = 1,
   hnwpre0, hnwrap0, hnwrap1, hnwrap3, hxchlvl,
-  htable = dcnode.querySelectorAll('td>h1, td>h2, td>h3, td>h4, td>h5, td>h6, th>h1, th>h2, th>h3, th>h4, th>h5, th>h6'),
+  hsubel = dcnode.querySelectorAll(`:not(${dcontainer})>h1, :not(${dcontainer})>h2, :not(${dcontainer})>h3, :not(${dcontainer})>h4, :not(${dcontainer})>h5, :not(${dcontainer})>h6`),
   htitle = (dcnode.querySelectorAll('h1, h2') || [null])[0],
   hxct = [0, 0, 0, 0, 0, 0, 0],
   hxct_hhx = [0, 0, 0, 0, 0, 0, 0],
@@ -90,7 +91,7 @@ let chid = dcnode.querySelector('#header') ? "header" : "top",
   shct = 0,
   tf05, tf0auto, tf1auto,
   tochxs = [];
-if (!navchlen) { htable.forEach(ht => ht.className = "htable"); }
+if (!navchlen) { hsubel.forEach(ht => ht.className = "hsubel"); }
 if (!navchlen && htitle && !/\btitle\b/i.test(htitle.className)) { htitle.className = "title"; }
 hxlen = [0].concat(hdgtags.map(e => dcnode.querySelectorAll(e).length));
 if (!hxlen.some(e => e)) {
@@ -133,10 +134,10 @@ if (tf05[0] && tf05[1] && tf05[2] && tf05[3] && (tf05[2] > tf05[0] || tf05[3] < 
   hnseps = [""].concat(".".repeat((tf05[1] || tf05[3] || 1) - 1).split(""))
     .concat(tf05[1] === 1 || !tf05[1] && tf05[3] === 1 ? ["."] : [""]);
 }
-h16nav = !hxrlvl ? new RegExp("^(?=<h(?![1-6] class=['\"]?htable|[12] class=['\"]?title)[1-6].*?>)", "im")
-  : !navchlen ? new RegExp("^(?=<h(?![1-6] class=['\"]?htable|[12] class=['\"]?title)[0-"
+h16nav = !hxrlvl ? new RegExp("^(?=<h(?![1-6] class=['\"]?hsubel|[12] class=['\"]?title)[1-6].*?>)", "im")
+  : !navchlen ? new RegExp("^(?=<h(?![1-6] class=['\"]?hsubel|[12] class=['\"]?title)[0-"
     + (hxrlvl >= tf05[2] + tf05[3] ? hxrlvl : (tf05[2] + tf05[3] || 1) - 1) + "].*?>)", "gim")
-  : (hxrlvl > hxchlvl) ? new RegExp("^(?=<h(?![1-6] class=['\"]?htable|[12] class=['\"]?title)["
+  : (hxrlvl > hxchlvl) ? new RegExp("^(?=<h(?![1-6] class=['\"]?hsubel|[12] class=['\"]?title)["
     + (hxchlvl + 1) + "-" + hxrlvl + "].*?>)", "gim") : /^$/;
 h16mask = new RegExp("^<p"
   + (hxrlvl > 0 && (tf05[2] || tf05[0]) && tf0auto && (tf05[2] || tf05[0]) >= tf0auto ? "" : "(?! id=subhead1 )")
