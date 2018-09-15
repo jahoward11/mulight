@@ -11,8 +11,6 @@ window.annos.fns = window.annos.fns || function x(cfgs) {
 'use strict';
 
 let acs = window.annos && window.annos.configs || {},
-  //a = window.annos && window.annos.configs && window.annos || { configs: {} },
-  //acs = a.configs,
   annoblocks = [], //refNbrAssign, annosXlink
   dcontainer = window.editorApp ? "#render_div_42qz0xfp" : "body",
   dcnode = window.document.querySelector(dcontainer),
@@ -37,11 +35,9 @@ acs = {
   texthl: cfgs && cfgs.texthl || acs.texthl || []
 };
 
-
 function chNbr(chnbru) { //refNbrAssign, annosXlink
   return (acs.ptchbgn[1] > 1) ? chnbru - (100 * acs.ptchbgn[0]) : chnbru;
 }
-
 
 function hljsSetup() {
   let codeblocks = window.document.querySelectorAll('code'),
@@ -57,11 +53,10 @@ function hljsSetup() {
         pcode.parentNode.replaceChild(prenew, pcode);
       } else if (pcode.nodeName === 'PRE' && window.hljs) {
         window.hljs.highlightBlock(cbi);
-      }
+      } //hljs.initHighlighting();
     }
-  }); //hljs.initHighlighting();
+  });
 }
-
 
 function refNbrAssign() {
 let hnbgn = acs.ptchbgn[acs.ptchbgn[0]],
@@ -72,8 +67,6 @@ let hnbgn = acs.ptchbgn[acs.ptchbgn[0]],
 let chid = dcnode.querySelector('#header') ? "header" : "top",
   divnew, divinnr, h16mask, h16nav,
   hdgtags = ['>h1:not(.title)', '>h2:not(.title):not(.author)', '>h3:not(.date)', '>h4', '>h5', '>h6'].map(e => dcontainer + e),
-  //hdgtags = [':not(td):not(th)>h1:not(.title)', ':not(td):not(th)>h2:not(.title):not(.author)', ':not(td):not(th)>h3:not(.date)', ':not(td):not(th)>h4', ':not(td):not(th)>h5', ':not(td):not(th)>h6'],
-  //hdgtags = ['h1:not(.title)', 'h2:not(.title):not(.author)', 'h3:not(.date)', 'h4', 'h5', 'h6'],
   hnpatt, hnpatt1, hnpatt2, hnseps,
   hntoc = 1,
   hnwpre0, hnwrap0, hnwrap1, hnwrap3, hxchlvl,
@@ -225,7 +218,7 @@ for (i = 0, parlen = pars.length; i < parlen; i++) { //for (let [i, pari] of par
     pcontainer.parentNode.insertBefore(divnew, pcontainer);
   }
 }
-if (hxrlvl < 0 || hxrlvl > 6) {
+if (!dcnode.querySelector('.refnbr')) { //(hxrlvl < 0 || hxrlvl > 6) {
   divnew = window.document.createElement('div');
   divnew.className = "refnbr";
   divnew.style.display = "none";
@@ -276,7 +269,6 @@ tocbuild = !tocbuild ? ""
   + "\n</ul>\n</nav>\n";
 }
 
-
 function annosXlink() {
   let mnotebqs = window.document.querySelectorAll('.mnote'), prt, xlink;
   mnotebqs.forEach(mnbq => { mnbq.innerHTML = mnbq.innerHTML
@@ -303,7 +295,6 @@ function annosXlink() {
         }
       }
 */
-
 
 function annosHilit(docmod) {
   let acolor, aptys, atag,
@@ -337,7 +328,6 @@ function annosHilit(docmod) {
   return docmod
   .replace(/(<(?=!--|<[eims]|\/?[a-z])[^\n<>]*)<(em|ins|mark|s|span|strong)\b[^\n<>]*>(.*?)<\/\2>(?=[^\n<>]*>)/g, "$1$3");
 }
-
 
 if (!Array.isArray(acs.texthl) && acs.texthl.length) { texthl = acs.texthl;
 } else { texthl = (dcnode.innerHTML.match(sepatthl) || ["", ""])[1]; }
