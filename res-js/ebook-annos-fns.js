@@ -10,8 +10,9 @@ window.annos = window.annos || { configs: {} };
 window.annos.fns = window.annos.fns || function x(cfgs) {
 'use strict';
 
-let a = window.annos && window.annos.configs && window.annos || { configs: {} },
-  acs = a.configs,
+let acs = window.annos && window.annos.configs || {},
+  //a = window.annos && window.annos.configs && window.annos || { configs: {} },
+  //acs = a.configs,
   annoblocks = [], //refNbrAssign, annosXlink
   dcontainer = window.editorApp ? "#render_div_42qz0xfp" : "body",
   dcnode = window.document.querySelector(dcontainer),
@@ -76,7 +77,7 @@ let chid = dcnode.querySelector('#header') ? "header" : "top",
   hnpatt, hnpatt1, hnpatt2, hnseps,
   hntoc = 1,
   hnwpre0, hnwrap0, hnwrap1, hnwrap3, hxchlvl,
-  hsubel = dcnode.querySelectorAll(`:not(${dcontainer})>h1, :not(${dcontainer})>h2, :not(${dcontainer})>h3, :not(${dcontainer})>h4, :not(${dcontainer})>h5, :not(${dcontainer})>h6`),
+  hsublvls = dcnode.querySelectorAll(`:not(${dcontainer})>h1, :not(${dcontainer})>h2, :not(${dcontainer})>h3, :not(${dcontainer})>h4, :not(${dcontainer})>h5, :not(${dcontainer})>h6`),
   htitle = (dcnode.querySelectorAll('h1, h2') || [null])[0],
   hxct = [0, 0, 0, 0, 0, 0, 0],
   hxct_hhx = [0, 0, 0, 0, 0, 0, 0],
@@ -91,7 +92,7 @@ let chid = dcnode.querySelector('#header') ? "header" : "top",
   shct = 0,
   tf05, tf0auto, tf1auto,
   tochxs = [];
-if (!navchlen) { hsubel.forEach(ht => ht.className = "hsubel"); }
+if (!navchlen) { hsublvls.forEach(h => h.className = "hsublvl"); }
 if (!navchlen && htitle && !/\btitle\b/i.test(htitle.className)) { htitle.className = "title"; }
 hxlen = [0].concat(hdgtags.map(e => dcnode.querySelectorAll(e).length));
 if (!hxlen.some(e => e)) {
@@ -134,10 +135,10 @@ if (tf05[0] && tf05[1] && tf05[2] && tf05[3] && (tf05[2] > tf05[0] || tf05[3] < 
   hnseps = [""].concat(".".repeat((tf05[1] || tf05[3] || 1) - 1).split(""))
     .concat(tf05[1] === 1 || !tf05[1] && tf05[3] === 1 ? ["."] : [""]);
 }
-h16nav = !hxrlvl ? new RegExp("^(?=<h(?![1-6] class=['\"]?hsubel|[12] class=['\"]?title)[1-6].*?>)", "im")
-  : !navchlen ? new RegExp("^(?=<h(?![1-6] class=['\"]?hsubel|[12] class=['\"]?title)[0-"
+h16nav = !hxrlvl ? new RegExp("^(?=<h(?![1-6] class=['\"]?hsublvl|[12] class=['\"]?title)[1-6].*?>)", "im")
+  : !navchlen ? new RegExp("^(?=<h(?![1-6] class=['\"]?hsublvl|[12] class=['\"]?title)[0-"
     + (hxrlvl >= tf05[2] + tf05[3] ? hxrlvl : (tf05[2] + tf05[3] || 1) - 1) + "].*?>)", "gim")
-  : (hxrlvl > hxchlvl) ? new RegExp("^(?=<h(?![1-6] class=['\"]?hsubel|[12] class=['\"]?title)["
+  : (hxrlvl > hxchlvl) ? new RegExp("^(?=<h(?![1-6] class=['\"]?hsublvl|[12] class=['\"]?title)["
     + (hxchlvl + 1) + "-" + hxrlvl + "].*?>)", "gim") : /^$/;
 h16mask = new RegExp("^<p"
   + (hxrlvl > 0 && (tf05[2] || tf05[0]) && tf0auto && (tf05[2] || tf05[0]) >= tf0auto ? "" : "(?! id=subhead1 )")
@@ -223,6 +224,12 @@ for (i = 0, parlen = pars.length; i < parlen; i++) { //for (let [i, pari] of par
     pcontainer = (pars[i].parentNode.nodeName !== 'PRE') ? pars[i] : pars[i].parentNode;
     pcontainer.parentNode.insertBefore(divnew, pcontainer);
   }
+}
+if (hxrlvl < 0 || hxrlvl > 6) {
+  divnew = window.document.createElement('div');
+  divnew.className = "refnbr";
+  divnew.style.display = "none";
+  dcnode.appendChild(divnew);
 }
 tochxs = ((tf05[2] && tf05[3]) || (tf05[0] && tf05[1])) && dcnode.querySelectorAll(hdgtags.slice(
   ...(tf05[2] && tf05[3] ? [tf05[2] - 1, tf05[2] + tf05[3] - 1] : [tf05[0] - 1, tf05[0] + tf05[1] - 1])
