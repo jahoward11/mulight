@@ -224,7 +224,8 @@ if (!dcnode.querySelector('.refnbr')) { //(hxrlvl < 0 || hxrlvl > 6) {
   divnew.style.display = "none";
   dcnode.appendChild(divnew);
 }
-tochxs = ((tf05[2] && tf05[3]) || (tf05[0] && tf05[1])) && dcnode.querySelectorAll(hdgtags.slice(
+tochxs = ((tf05[2] && tf05[3]) || (tf05[0] && tf05[1])) && hxrlvl > 0 && hxrlvl < 7
+  && dcnode.querySelectorAll(hdgtags.slice(
   ...(tf05[2] && tf05[3] ? [tf05[2] - 1, tf05[2] + tf05[3] - 1] : [tf05[0] - 1, tf05[0] + tf05[1] - 1])
   ).join());
 hxct = [0, 0, 0, 0, 0, 0, 0];
