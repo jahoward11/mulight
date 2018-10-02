@@ -10,29 +10,26 @@ window.annos = window.annos || { configs: {} };
 window.annos.fns = window.annos.fns || function x(cfgs) {
 'use strict';
 
-let acs = window.annos && window.annos.configs || {},
+let acs = !cfgs.eventPhase && cfgs || window.annos && window.annos.configs || {},
   annoblocks = [], //refNbrAssign, annosXlink
   dcontainer = window.editorApp ? "#render_div_42qz0xfp" : "body",
   dcnode = window.document.querySelector(dcontainer),
-  dstyle = dcnode.querySelectorAll('style') || [],
+  dstyles = dcnode.querySelectorAll('style') || [],
   htmlperiphs, pei = 0,
   sepatthl = /<!-- *(?:annotations-hili|annoshl|texthl).*\n*([^]*?)\n*-->/i,
   sepatthlmf = /((?:\n|^)(?:{[ *+=_~]*\\?[#.]?\w*}|)\n|^)(?!{[ *+=_~]*\\?[#.]?\w*})([^]+?)(?=(?:{[ *+=_~]*\\?[#.]?\w*}|)(?:\n\n|$)|\n{[ *+=_~]*\\?[#.]?\w*}(?:\n|$))/g,
-  sepattperiphs = /<!--[^]*?-->|<(script|style)\b.*?>[^]*?<\/\1>/gi,
+  sepattperiph = /<!--[^]*?-->|<(script|style)\b.*?>[^]*?<\/\1>/gi,
   stylenew, texthl,
   tocbuild = ""; //refNbrAssign, annos.fns
 acs = {
-  ptfnm: cfgs && cfgs.ptfnm || acs.ptfnm || ["part", "1"],
-  ptchbgn: cfgs && Array.isArray(cfgs.ptchbgn) && cfgs.ptchbgn
-    || Array.isArray(acs.ptchbgn) && acs.ptchbgn || [1, 1],
-  tocfmt: cfgs && cfgs.tocfmt || acs.tocfmt || ( cfgs && cfgs.tocfmt === "" || acs.tocfmt === "" ? ""
-    : cfgs && cfgs.tocfmt === 0 || acs.tocfmt === 0 ? "0" : null ),
-  hnwrap: cfgs && cfgs.hnwrap || acs.hnwrap || "",
-  pnwrap: cfgs && cfgs.pnwrap || acs.pnwrap || (cfgs && cfgs.pnwrap === "" || acs.pnwrap === "" ? "" : "<br />"),
-  pnfreq: cfgs && cfgs.pnfreq > 0 && cfgs.pnfreq || acs.pnfreq > 0 && acs.pnfreq
-    || (cfgs && cfgs.pnfreq <= 0 || acs.pnfreq <= 0 ? 0 : 5),
-  numalt: cfgs && cfgs.numalt || acs.numalt || [], //["Zeroth", "First", "Second", "Third"],
-  texthl: cfgs && cfgs.texthl || acs.texthl || []
+  ptfnm: acs.ptfnm || ["part", "1"],
+  ptchbgn: Array.isArray(acs.ptchbgn) && acs.ptchbgn || [1, 1],
+  tocfmt: acs.tocfmt || (acs.tocfmt === "" ? "" : acs.tocfmt === 0 ? "0" : null),
+  hnwrap: acs.hnwrap || "",
+  pnwrap: acs.pnwrap || (acs.pnwrap === "" ? "" : "<br />"),
+  pnfreq: acs.pnfreq > 0 && acs.pnfreq || (acs.pnfreq <= 0 ? 0 : 5),
+  numalt: acs.numalt || [], //["Zeroth", "First", "Second", "Third"],
+  texthl: acs.texthl || []
 };
 
 function chNbr(chnbru) { //refNbrAssign, annosXlink
@@ -45,7 +42,7 @@ function hljsSetup() {
   codeblocks.forEach(cbi => {
     pcode = cbi.parentNode;
     if (pcode.parentNode.nodeName !== 'PRE' && pcode.childNodes.length === 1) {
-      if (pcode.nodeName === 'P' || cbi.className === "language-p") {
+      if (pcode.nodeName === 'P' || pcode.className === "language-p") {
         // NOCS generates P>CODE. Markdownit generates PRE>CODE.
         // Transform either one to PRE>P>CODE.
         prenew = window.document.createElement('pre');
@@ -89,7 +86,7 @@ if (!navchlen) { hsublvls.forEach(h => h.className = "hsublvl"); }
 if (!navchlen && htitle && !/\btitle\b/i.test(htitle.className)) { htitle.className = "title"; }
 hxlen = [0].concat(hdgtags.map(e => dcnode.querySelectorAll(e).length));
 if (!hxlen.some(e => e)) {
-  let p0 = dcnode.querySelector('p');
+  let p0 = dcnode.querySelector('p:not(.author):not(.date)');
   p0.parentNode.insertBefore(window.document.createElement('h3'), p0);
 }
 hxtoplvl = hxlen.findIndex(l => l);
@@ -143,14 +140,15 @@ dcnode.innerHTML = dcnode.innerHTML
 //.replace(/<p><\/p>(<blockquote.+?\/blockquote>)/gi, "$1\n<p>").replace(/<p>(?=<\/p>)/gi, "");
   .replace( /^<(?!\/?li>|\/?[dou]l>)\/?\b.+\n(?=<([dou]l)(?:[^](?!<p>))+?<\/\1>(?!\n<\/?li>|\n<\/?[dou]l>))/gim,
     "$&<p style=\"display: none;\"></p>\n" )
-  // insert empty p-tags before p-free ol/ul block
-  .replace(/^<p>(?:(&\w+;|\*|- -)|\\)<\/p>$/gim, "<div class=ssbr align=center>$1</div>")
+  // insert empty p-tags before p-free dl/ol/ul block
+  .replace(/^<p>(&(?!nbsp;)\w+;|\*|- -)<\/p>$/gim, "<div class=ssbr style=\"margin: 1em 0; text-align: center; clear: right;\">$1</div>")
+  .replace(/^<p>(?:&nbsp;|\\) *<\/p>$/gim, "<div class=ssbr align=center>&nbsp;</div>")
   // convert p.ssbr to div.ssbr
 //.replace(/^<p> *(\*|(?!\S *<\/p>)[ .,?!:;*+~=_$&@#%^\/<>‹›«»…†‡·•–—§¶-]+?) *<\/p>$/gim, "<div class=ssbr align=center>&puncsp;$1&puncsp;</div>")
   // nonfunctional: no test can indicate preexisting, leading escape
   .replace(/(<br *\/?>\n?) *\\?\s*(?=<\/p>$)|^(<p>)\s*\\?\s*(?=<br *\/?>)/gim, "$1$2&nbsp;")
   // replace potential \-char in par-post-br-\ or par-pre-\-br with nbsp
-  .replace( h16nav, m => "<p id=subhead" + ++shct + " class=navch style=\"margin: 0; padding: 0;\"></p>\n" )
+  .replace(h16nav, m => "<p id=subhead" + ++shct + " class=navch style=\"margin: 0; padding: 0;\"></p>\n")
   // insert p.navch
   .replace(h16mask, "<div$1div"); // convert p.navch + h1-6 to div.navch + h1-6
 pnwrap = /=>/.test(acs.pnwrap) ? acs.pnwrap : "\"" + acs.pnwrap + (/\$&/.test(acs.pnwrap) ? "" : "$&") + "\"";
@@ -343,8 +341,8 @@ if (!Array.isArray(acs.texthl) || !acs.texthl.length) {
 dcnode.innerHTML = dcnode.innerHTML.replace(/<!-- *(?:\/\/ *)?(?:anno|text)[^]*?-->\n?/gi, "");
 dcnode.normalize();
 hljsSetup();
-htmlperiphs = dcnode.innerHTML.match(sepattperiphs) || []; // preserve periph
-dcnode.innerHTML = dcnode.innerHTML.replace(sepattperiphs, "<!--phold-periph-->"); // placehold periph
+htmlperiphs = dcnode.innerHTML.match(sepattperiph) || []; // preserve periph
+dcnode.innerHTML = dcnode.innerHTML.replace(sepattperiph, "<!--phold-periph-->"); // placehold periph
 //if (typeof acs.tocfmt !== 'number' || acs.tocfmt >= 0) { refNbrAssign(); }
 if (!dcnode.querySelector('.refnbr')) {
   if (window.editorApp) { window.alert("editorApp detected.\nApplying ebook-annos-fns to render."); }
@@ -358,11 +356,12 @@ if (!dcnode.querySelector('#TOC') && tocbuild) { // insert toc
       "\n" + tocbuild + "\n$1<div style=\"display: none;\">\\newpage </div>\n\n" );
 }
 dcnode.innerHTML = dcnode.innerHTML.replace(/<!--phold-periph-->/gi, () => htmlperiphs[pei++]); // restore periph
-if (!Array.from(dstyle).some(s => /\.refnbr\b/i.test(s.innerHTML))) {
-  stylenew = window.document.createElement('style'); //color: Silver;
+if (!Array.from(dstyles).some(s => /\.refnbr\b/i.test(s.innerHTML))) {
+  stylenew = window.document.createElement('style');
+  stylenew.setAttribute('type', 'text/css');
   stylenew.innerHTML = "\n.refnbr { font-size: 0.625em; line-height: 0.9em; user-select: none; }\n";
   //+ ".refnbr a:link, .refnbr a:visited { color: LightSteelBlue; text-decoration: none; }\n";
-  dcnode.appendChild(stylenew);
+  dcnode.appendChild(stylenew); //color: Silver;
 }
 };
 
