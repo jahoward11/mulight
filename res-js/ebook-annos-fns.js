@@ -367,9 +367,10 @@ if (!Array.from(dstyles).some(s => /\.refnbr\b/i.test(s.innerHTML))) {
 
 let rstate = window.document.readyState;
 //window.console.log("marker4: " + rstate);
-if ( (!window.onload || window.onload !== window.annos.fns)
-&& (rstate === 'loading' || rstate === 'uninitialized') ) {
-  window.onload = window.annos.fns;
+if (rstate === 'loading' || rstate === 'uninitialized') {
+  if (!window.onload) { window.onload = window.annos.fns;
+  } else if (window.onload !== window.annos.fns) { window.setTimeout(window.annos.fns, 2500); }
 } else if (!window.onload && (!window.editorApp || Object.keys(window.annos.configs).length)) {
-  window.annos.fns(); } //if (rstate === 'complete' || rstate === 'interactive' || rstate === 'loaded')
+  window.annos.fns();
+} //if (rstate === 'complete' || rstate === 'interactive' || rstate === 'loaded')
 })();
