@@ -10,7 +10,7 @@ window.annos = window.annos || { configs: {} };
 window.annos.fns = window.annos.fns || function x(cfgs) {
 'use strict';
 
-let acs = !cfgs.eventPhase && cfgs || window.annos && window.annos.configs || {},
+let acs = cfgs && !cfgs.eventPhase && cfgs || window.annos && window.annos.configs || {},
   annoblocks = [], //refNbrAssign, annosXlink
   dcontainer = window.editorApp ? "#render_div_42qz0xfp" : "body",
   dcnode = window.document.querySelector(dcontainer),
