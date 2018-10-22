@@ -116,7 +116,7 @@ hxchlvl = tf05[4] !== null ? tf05[4] : tf05[0] && tf05[1]
   : [3, 2, 1, 4, 5, 6].find(l => hxlen[l] && tf05[2] <= l && tf05[2] + tf05[3] > l) || 0;
 hxrlvl = tf05[5] !== null ? tf05[5] : hxchlvl;
 if (tf05[2] === null || tf05[3] === null) { tf05[2] = tf05[0]; tf05[3] = tf05[1]; }
-if (hxrlvl && (!tf05[0] || !tf05[1])) { hntoc--;
+if (hxrlvl && hxrlvl < 7 && (!tf05[0] || !tf05[1])) { hntoc--;
   if (tf05[2] && tf05[3] && hxrlvl >= tf05[2]) { tf05[0] = tf05[2]; tf05[1] = hxrlvl - tf05[2] + 1;
   } else { tf05[0] = hxrlvl; tf05[1] = 1; }
 }
@@ -222,10 +222,9 @@ if (!dcnode.querySelector('.refnbr')) { //(hxrlvl < 0 || hxrlvl > 6) {
   divnew.style.display = "none";
   dcnode.appendChild(divnew);
 }
-tochxs = ((tf05[2] && tf05[3]) || (tf05[0] && tf05[1])) && hxrlvl > 0 && hxrlvl < 7
-  && dcnode.querySelectorAll(hdgtags.slice(
+tochxs = ((tf05[2] && tf05[3]) || (tf05[0] && tf05[1])) && dcnode.querySelectorAll(hdgtags.slice(
   ...(tf05[2] && tf05[3] ? [tf05[2] - 1, tf05[2] + tf05[3] - 1] : [tf05[0] - 1, tf05[0] + tf05[1] - 1])
-  ).join());
+).join()); //&& hxrlvl > 0 && hxrlvl < 7 ???
 hxct = [0, 0, 0, 0, 0, 0, 0];
 hxct_hhx = [0, 0, 0, 0, 0, 0, 0];
 hnpatt2 = (!tf05[0] || !tf05[1] || hxtoplvl < 0) ? null : !hxlen[tf05[0]] ? () => ptchbgn[0]
