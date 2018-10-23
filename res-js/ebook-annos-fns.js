@@ -206,7 +206,7 @@ for (i = 0, parlen = pars.length; i < parlen; i++) { //for (let [i, pari] of par
   //divnew.style.color = "silver";
   //divnew.style.maxWidth = "4em";
     divnew.style.margin = "0 0 0 auto";
-    divnew.style.padding = "0 0.5em";
+    divnew.style.padding = "0 0.25em";
     divnew.style.cssFloat = "right";
   //divnew.style.clear = "right";
     divnew.innerHTML = (navct && chNbr(hnbgn) > 0) ? divinnr()
