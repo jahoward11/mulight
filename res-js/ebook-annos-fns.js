@@ -14,7 +14,7 @@ let acs = cfgs && !cfgs.eventPhase && cfgs || window.annos && window.annos.confi
   annoblocks = [], //refNbrAssign, annosXlink
   dcontainer = window.editorApp ? "#render_div_42qz0xfp" : "body",
   dcnode = window.document.querySelector(dcontainer),
-  dstyles = dcnode.querySelectorAll('style') || [],
+  dstyles = (window.editorApp ? dcnode : window.document).querySelectorAll('style') || [],
   htmlperiphs, pei = 0,
   sepatthl = /<!-- *(?:annotations-hili|annoshl|texthl).*\n*([^]*?)\n*-->/i,
   sepatthlmf = /((?:\n|^)(?:{[ *+=_~]*\\?[#.]?\w*}|)\n|^)(?!{[ *+=_~]*\\?[#.]?\w*})([^]+?)(?=(?:{[ *+=_~]*\\?[#.]?\w*}|)(?:\n\n|$)|\n{[ *+=_~]*\\?[#.]?\w*}(?:\n|$))/g,
@@ -205,9 +205,9 @@ for (i = 0, parlen = pars.length; i < parlen; i++) { //for (let [i, pari] of par
   //divnew.style.lineHeight = "0.9em";
   //divnew.style.color = "silver";
   //divnew.style.maxWidth = "4em";
-    divnew.style.margin = "0 0 0 auto";
-    divnew.style.padding = "0 0.25em";
-    divnew.style.cssFloat = "right";
+  //divnew.style.margin = "0 0 0 auto";
+  //divnew.style.padding = "0 0.25em";
+  //divnew.style.cssFloat = "right";
   //divnew.style.clear = "right";
     divnew.innerHTML = (navct && chNbr(hnbgn) > 0) ? divinnr()
       : "<a href=#" + chid + "><strong>" + (hxct_hhx[3] ? "&loz;" : "Fwd") + "</strong></a>"
@@ -358,9 +358,10 @@ dcnode.innerHTML = dcnode.innerHTML.replace(/<!--phold-periph-->/gi, () => htmlp
 if (!Array.from(dstyles).some(s => /\.refnbr\b/i.test(s.innerHTML))) {
   stylenew = window.document.createElement('style');
   stylenew.setAttribute('type', 'text/css');
-  stylenew.innerHTML = "\n.refnbr { font-size: 0.625em; line-height: 0.9em; user-select: none; }\n";
+  stylenew.innerHTML = "\n.refnbr { font-size: 0.625em; line-height: 0.9em; margin: 0 0 0 auto; padding: 0 0.25em; float: right; user-select: none; }\n"; //color: Silver;
   //+ ".refnbr a:link, .refnbr a:visited { color: LightSteelBlue; text-decoration: none; }\n";
-  dcnode.appendChild(stylenew); //color: Silver;
+  dstyles[0] ? dstyles[0].parentNode.insertBefore(stylenew, dstyles[0])
+  : (dcnode.head || dcnode.body || !window.editorApp && window.document.head || dcnode).appendChild(stylenew);
 }
 };
 
