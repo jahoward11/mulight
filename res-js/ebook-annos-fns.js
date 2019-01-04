@@ -1,9 +1,9 @@
 /**
  * HTML/Javascript CSI e-book annotations functions
- * Copyright (c) 2018 J.A. Howard | github.com/jahoward11
+ * Copyright (c) 2019 J.A. Howard | github.com/jahoward11
  */
 
-(function () { //let rstate
+(function () { //let rstate, elemsscript, afnccalled
 window.annos = window.annos || { configs: {} };
 //if (window.annos.fns) return;
 
@@ -17,10 +17,10 @@ let acs = cfgs && !cfgs.eventPhase && cfgs || window.annos && window.annos.confi
   dstyles = (window.editorApp ? dcnode : window.document).querySelectorAll('style') || [],
   htmlperiphs, pei = 0,
   sepatthl = /<!-- *(?:annotations-hili|annoshl|texthl).*\n*([^]*?)\n*-->/i,
-  sepatthlmf = /((?:\n|^)(?:{[ *+=_~]*\\?[#.]?\w*}|)\n|^)(?!{[ *+=_~]*\\?[#.]?\w*})([^]+?)(?=(?:{[ *+=_~]*\\?[#.]?\w*}|)(?:\n\n|$)|\n{[ *+=_~]*\\?[#.]?\w*}(?:\n|$))/g,
+  sepatthlmf = /((?:(?:\n|^)(?:\/.+\/[gim]*|.+?{ *\+\+ *\\?[#.]?\w*}|{[ *+=_~]*\\?[#.]?\w*})(?=$|\n))*)([^]*?)(?=$|\n\n|(?:\n\/.+\/[gim]*|\n.+?{ *\+\+ *\\?[#.]?\w*}|\s*{[ *+=_~]*\\?[#.]?\w*})(?:$|\n))/gi,
   sepattperiph = /<!--[^]*?-->|<(script|style)\b.*?>[^]*?<\/\1>/gi,
   stylenew, texthl,
-  tocbuild = ""; //refNbrAssign, annos.fns
+  tocbuild = ""; //refNbrAssign, annosfns
 acs = {
   ptfnm: acs.ptfnm || ["part", "1"],
   ptchbgn: Array.isArray(acs.ptchbgn) && acs.ptchbgn || [1, 1],
@@ -296,7 +296,7 @@ function annosXlink() {
 
 function annosHilit(docmod) {
   let acolor, aptys, atag,
-    colordflts = {mark: ".ye6", strong: "", em: "", s: "", ins: "", span: ""},
+    colordflts = {span: "", mark: ".ye6", strong: "", em: "", s: "", ins: ""},
     isregx, refnc, sepatt, tagdflt = "mark";
   acs.texthl.forEach(txt => {
     aptys = /{ *([*+=_~]*) *([#.]?\w*|\\#[0-9a-f]{3,6})}$/.exec(txt) || ["", "", ""];
@@ -329,12 +329,20 @@ function annosHilit(docmod) {
 
 if (!Array.isArray(acs.texthl) && acs.texthl.length) { texthl = acs.texthl;
 } else { texthl = (dcnode.innerHTML.match(sepatthl) || ["", ""])[1]; }
-texthl = texthl.replace(/(?: |^)\/\/.*/gm, "").replace( sepatthlmf, (m, f1, f2) =>
-  /^\/.+\/[gim]*$|{[ *+=_~]*\\?[#.]?\w*}\n./im.test(f2) ? m //(/(?:[^\\]|^)(?:\\\\)*\\(?!\\)/g, "$&\\")
-  : f1 + "(" + f2.replace(/(?=[$()*+.?[\\^{|])/g, "\\").replace(/["'‘’“”]/g, "[\"'‘’“”]")
+texthl = texthl.replace(/(?: |^)\/\/.*/gm, "")
+  .replace( sepatthlmf, (m, f1, f2) => !f2 ? m : f1 + "\n(" + f2.trim()
+    .replace(/(?=[$().?[\\{|])/g, "\\")
+    .replace(/(\*\*?|__?)(\*\*?|__?|)(.+?)\2\1/g, (mb, fb1, fb2, fb3) => "(?:<(?:em|strong)>){1,2}" + fb3 + "(?:</(?:em|strong)>){1,2}")
+    .replace(/( |^)==(.+?)==(?=[^\w=])/gm, (mb, fb1, fb2) => fb1 + "<mark>" + fb2 + "</mark>")
+    .replace(/( |^)~~(.+?)~~(?=[^\w~])/gm, (mb, fb1, fb2) => fb1 + "<s>" + fb2 + "</s>")
+    .replace(/( |^)\+\+(.+?)\+\+(?=[^\w+])/gm, (mb, fb1, fb2) => fb1 + "<ins>" + fb2 + "</ins>")
+    .replace(/( |^)(`+)(.+?)\2(?=[^\w`])/gm, (mb, fb1, fb2, fb3) => fb1 + "<code>" + fb3 + "</code>")
+    .replace(/~(\w+)~/g, (mb, fb1) => "<sub>" + fb1 + "</sub>")
+    .replace(/\^(\w+)\^/g, (mb, fb1) => "<sup>" + fb1 + "</sup>")
+    .replace(/(?=[*+^])/g, "\\").replace(/["'‘’“”]/g, "[\"'‘’“”]")
     .replace(/[ \u2008-\u200b]*(?:---?|\u2014)[ \u2008-\u200b]*/g, "[ \\u2008-\\u200b\\u2014-]+")
-    .replace(/\n/g, ")(.*?)(") + ")" ).replace(/\n\n+/g, "\n");
-if (!Array.isArray(acs.texthl) || !acs.texthl.length) {
+    .replace(/\n/g, ")(.*?)(") + ")" ).replace(/\n\n+/g, "\n").trim();
+if (!Array.isArray(acs.texthl) || !acs.texthl.length) { //(/(?:[^\\]|^)(?:\\\\)*\\(?!\\)/g, "$&\\")
   acs.texthl = texthl.split("\n").map(e => /^\/.+\/[gim]*$/i.test(e) ? window.eval(e) : e);
 }
 dcnode.innerHTML = dcnode.innerHTML.replace(/<!-- *(?:\/\/ *)?(?:anno|text)[^]*?-->\n?/gi, "");
@@ -352,7 +360,7 @@ dcnode.innerHTML = annosHilit(dcnode.innerHTML);
 if (!dcnode.querySelector('#TOC') && tocbuild) { // insert toc
   dcnode.innerHTML = dcnode.innerHTML
     .replace( /^\n*(<hr\b.*?>\n+|<figure\b.*?>.*?<\/figure>\n+)(?=(?:<(?!hr\b|figure\b).*\n|\n)*<(?:div|p)\b.*? class=['"]?navch\b.*?>|<h([123])\b.*?>.*?<\/h\2>)|^(?=<(?:div|p)\b.*? class=['"]?navch\b.*?>)/im,
-      "\n" + tocbuild + "\n$1<div style=\"display: none;\">\\newpage </div>\n\n" );
+      "\n" + tocbuild + "\n$1" ); //<div style=\"display: none;\">\\newpage </div>\n\n" );
 }
 dcnode.innerHTML = dcnode.innerHTML.replace(/<!--phold-periph-->/gi, () => htmlperiphs[pei++]); // restore periph
 if (!Array.from(dstyles).some(s => /\.refnbr\b/i.test(s.innerHTML))) {
@@ -360,17 +368,22 @@ if (!Array.from(dstyles).some(s => /\.refnbr\b/i.test(s.innerHTML))) {
   stylenew.setAttribute('type', 'text/css');
   stylenew.innerHTML = "\n.refnbr { font-size: 0.625em; line-height: 0.9em; margin: 0 0 0 auto; padding: 0 0.25em; float: right; user-select: none; }\n"; //color: Silver;
   //+ ".refnbr a:link, .refnbr a:visited { color: LightSteelBlue; text-decoration: none; }\n";
-  dstyles[0] ? dstyles[0].parentNode.insertBefore(stylenew, dstyles[0])
-  : (dcnode.head || dcnode.body || !window.editorApp && window.document.head || dcnode).appendChild(stylenew);
+  dstyles[0] && dstyles[0].parentNode ? dstyles[0].parentNode.insertBefore(stylenew, dstyles[0])
+  : (dcnode.head || dcnode.body || (!window.editorApp && window.document.head) || dcnode).appendChild(stylenew);
 }
 };
 
-let rstate = window.document.readyState;
+let rstate = window.document.readyState,
+  elemsscript = window.editorApp
+    && window.document.querySelector('#render_div_42qz0xfp').querySelectorAll('script'),
+  afnccalled = NodeList.prototype.isPrototypeOf(elemsscript)
+    && Array.from(elemsscript).some(e => /\bannos\.fns\b/.test(e.innerHTML));
 //window.console.log("marker4: " + rstate);
 if (rstate === 'loading' || rstate === 'uninitialized') {
   if (!window.onload) { window.onload = window.annos.fns;
-  } else if (window.onload !== window.annos.fns) { window.setTimeout(window.annos.fns, 2500); }
-} else if (!window.onload && (!window.editorApp || Object.keys(window.annos.configs).length)) {
-  window.annos.fns();
-} //if (rstate === 'complete' || rstate === 'interactive' || rstate === 'loaded')
+  } else if (window.onload !== window.annos.fns && !/\bannos\.fns\b/.test(window.onload.toString())) {
+    window.setTimeout(window.annos.fns, 2500); }
+} else if (!afnccalled) { window.annos.fns(); }
+  //if (rstate === 'complete' || rstate === 'interactive' || rstate === 'loaded')
+  //&& Object.keys(window.annos.configs).length
 })();
