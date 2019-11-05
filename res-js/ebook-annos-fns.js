@@ -1,7 +1,7 @@
-/**
- * HTML/Javascript CSI e-book annotations functions
- * Copyright (c) 2019 J.A. Howard | github.com/jahoward11
- */
+/*
+HTML/Javascript CSI e-book annotations functions
+Copyright (c) 2019 J.A. Howard | github.com/jahoward11
+*/
 
 (function () { //let rstate, elemsscript, afnccalled
 window.annos = window.annos || { configs: {} };
@@ -12,7 +12,7 @@ window.annos.fns = window.annos.fns || function x(cfgs) {
 
 let acs = cfgs && !cfgs.eventPhase && cfgs || window.annos && window.annos.configs || {},
   annoblocks = [], //refNbrAssign, annosXlink
-  dcontainer = window.editorApp ? "#render_div_42qz0xfp" : "body",
+  dcontainer = window.editorApp ? "#esrender_42qz0xfp" : "body",
   dcnode = window.document.querySelector(dcontainer),
   dstyles = (window.editorApp ? dcnode : window.document).querySelectorAll('style') || [],
   htmlperiphs, pei = 0,
@@ -375,7 +375,7 @@ if (!Array.from(dstyles).some(s => /\.refnbr\b/i.test(s.innerHTML))) {
 
 let rstate = window.document.readyState,
   elemsscript = window.editorApp
-    && window.document.querySelector('#render_div_42qz0xfp').querySelectorAll('script'),
+    && window.document.querySelector('#esrender_42qz0xfp').querySelectorAll('script'),
   afnccalled = NodeList.prototype.isPrototypeOf(elemsscript)
     && Array.from(elemsscript).some(e => /\bannos\.fns\b/.test(e.innerHTML));
 //window.console.log("marker4: " + rstate);
